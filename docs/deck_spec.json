@@ -1,0 +1,17 @@
+[
+  {"layout": "title", "title": "Coding Agents for Data Engineering", "subtitle": "Sobeys x Databricks — Accelerating SDP, Medallion + DABs"},
+  {"layout": "section_break_1", "title": "The problem"},
+  {"layout": "content_basic", "title": "One agent, twelve dialects", "body": "Generic code that ignores our conventions\nSometimes legacy DLT we are retiring\nInconsistent naming across engineers\nNo shared data-quality policy\nHarder to review and onboard", "bullets": true},
+  {"layout": "content_3col", "title": "Where each agent fits", "columns": ["Claude Code", "Repo-scale work\nPipelines, DABs, refactors\nHolds instructions + skills", "Databricks Assistant", "In the workspace\nNotebooks, SQL, pipelines\nUC-aware and inline", "AI/BI Genie", "Q and A over your data\nPlain-English questions\nNot code generation"]},
+  {"layout": "section_break_1", "title": "Teach the agent your standards"},
+  {"layout": "content_2col", "title": "Two ways to teach it", "columns": ["Instructions — CLAUDE.md", "Always-on standards\nLoaded every session\nNaming, layers, guardrails\nOur house style, encoded", "Skills", "On-demand power tools\nInvoked by name\nBundle templates + docs\nRepeatable and shareable"]},
+  {"layout": "content_basic", "title": "Instructions: standards, always on", "body": "Modern SDP only — legacy DLT is banned\nMedallion Bronze, Silver, Gold rules\nNaming and Unity Catalog, no DBFS\nData-quality Expectations on Silver\nDABs with dev and prod, dev-only from agents\nA definition-of-done self-check", "bullets": true},
+  {"layout": "content_basic", "title": "Skills: repeatable tasks, on demand", "body": "/sdp-bronze-ingest scaffolds a compliant table\n/legacy-dlt-migrate upgrades old DLT\nSkills carry templates and reference docs\nInvoked by name when relevant\nShared in Git across the team", "bullets": true},
+  {"layout": "section_break_1", "title": "Live demo"},
+  {"layout": "content_basic", "title": "Five beats", "body": "1  Naked agent — generic output\n2  Plus instructions — on-standard, refuses legacy DLT\n3  Plus skills — scaffold in seconds\n4  Agent runs the loop — validate, deploy dev, self-fix\n5  Team scale — standards in Git", "bullets": true},
+  {"layout": "content_2col", "title": "The running example", "columns": ["Medallion pipeline (SDP)", "brz_pos_transaction — Auto Loader\nslv_pos_transaction — Expectations\ngld_daily_sales_by_store_category", "Packaged as a DAB", "dev and prod targets\nParameterized catalog and schema\nvalidate --strict before deploy"]},
+  {"layout": "content_basic", "title": "Guardrails for the enterprise", "body": "Agents deploy to dev only\nProd is CI/CD plus human PR approval\nSecrets via secret scopes\nEvery PR reviewed, ideally by a second agent first\nThe agent accelerates, the human merges", "bullets": true},
+  {"layout": "content_basic", "title": "The flywheel: standards in Git", "body": "CLAUDE.md and skills committed next to code\ngit clone — every engineer inherits them\nChange a standard once, open a PR\nThe whole team levels up at once", "bullets": true},
+  {"layout": "content_basic", "title": "Call to action", "body": "Co-author the Sobeys CLAUDE.md\nTurn your top 3 patterns into skills\nAdopt the guardrails: dev-only, PR review, scopes\nRepo: github.com/brianlui-dbx/dih-vibe-coding", "bullets": true},
+  {"layout": "closing"}
+]
