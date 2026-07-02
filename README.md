@@ -40,23 +40,69 @@ A retail sales medallion pipeline (grocery-relevant for Sobeys):
 - **Gold** `gld_daily_sales_by_store_category` — daily sales aggregated by store & product
   category (Materialized View, preserves slice dimensions).
 
-## Run it (rehearsal)
+## Deploy in your own environment
 
-> **Profiles:** this repo uses the placeholder profile name **`sobeys-dev`** to model
-> Sobeys' own setup. When *you* rehearse, substitute your own profile (e.g.
-> `dbw-brlui-sandbox`) and point the `catalog` variable at a catalog you can write to.
+Everything is parameterized — **nothing about the workspace is hardcoded** (auth comes from
+`--profile`). To run this in *your* environment, change **three DAB variables**, defined in
+`databricks.yml`:
+
+| Variable | Default | What it is |
+|----------|---------|-----------|
+| `catalog` | `sobeys_dev` | Unity Catalog the medallion pipeline publishes into. |
+| `schema` | `retail` | Domain schema for the tables (layers via `brz_/slv_/gld_` prefixes). |
+| `source_path` | `/Volumes/sobeys_dev/landing/pos/` | UC Volume where raw POS JSON lands for Auto Loader. |
+
+> The **landing Volume** (`source_path`) lives in its own `landing` schema — separate from the
+> `retail` output schema. Create it once:
+> `databricks schemas create landing <catalog> --profile <your-profile>` then
+> `databricks volumes create <catalog> landing pos MANAGED --profile <your-profile>`.
+
+Set the variables **either** per-command with `--var` (below) **or** by editing the `default:`
+values in `databricks.yml`.
+
+> **Profiles:** this repo uses the placeholder profile **`sobeys-dev`**. Substitute your own
+> (e.g. `dbw-brlui-sandbox`) via `--profile`. Never use the `DEFAULT` profile (see `CLAUDE.md`).
 
 ```bash
+CATALOG=<your_catalog>; SCHEMA=retail; PROFILE=<your-profile>
+VOL=/Volumes/$CATALOG/landing/pos/
+
 # 1. Generate sample data (newline-delimited JSON into ./sample_data/)
 python data_generator/generate_pos_data.py --rows 50000 --out ./sample_data
 
 # 2. Upload it to your landing Volume
-databricks fs cp -r ./sample_data dbfs:/Volumes/<catalog>/landing/pos/ --profile <your-profile>
+databricks fs cp -r ./sample_data "dbfs:$VOL" --profile $PROFILE
 
-# 3. Validate + deploy the bundle to dev, then run the pipeline
-databricks bundle validate --strict -t dev --profile <your-profile>
-databricks bundle deploy -t dev --profile <your-profile>
-databricks bundle run retail_sales_pipeline -t dev --profile <your-profile>
+# 3. Validate + deploy to dev, then run the pipeline (override all three vars)
+databricks bundle validate --strict -t dev --profile $PROFILE \
+  --var catalog=$CATALOG --var schema=$SCHEMA --var source_path=$VOL
+databricks bundle deploy   -t dev --profile $PROFILE \
+  --var catalog=$CATALOG --var schema=$SCHEMA --var source_path=$VOL
+databricks bundle run retail_sales_pipeline -t dev --profile $PROFILE
+```
+
+## Reset to a clean slate (rerun the demo)
+
+SDP streaming tables keep **Auto Loader checkpoint state** — stale checkpoints are the #1 cause
+of a "dirty" rerun (new sample data silently not re-ingested). Pick one path:
+
+**Quick rerun (keep the pipeline)** — a full refresh resets + recomputes every table from scratch:
+```bash
+# Optional: replace the landing data first
+databricks fs rm -r "dbfs:$VOL" --profile $PROFILE
+python data_generator/generate_pos_data.py --rows 50000 --out ./sample_data
+databricks fs cp -r ./sample_data "dbfs:$VOL" --profile $PROFILE
+# Reset + recompute all tables (clears streaming / Auto Loader state)
+databricks bundle run retail_sales_pipeline -t dev --profile $PROFILE --full-refresh-all
+```
+
+**Full teardown (cleanest — nothing left behind)**:
+```bash
+databricks bundle destroy -t dev --profile $PROFILE      # remove the pipeline + deployment
+databricks fs rm -r "dbfs:$VOL" --profile $PROFILE        # empty the landing Volume
+# Drop the medallion tables so no stale data remains (run in a SQL editor / warehouse):
+#   DROP SCHEMA IF EXISTS <catalog>.retail CASCADE;
+# Then re-run the Deploy steps above for a pristine environment.
 ```
 
 ## Demo assets
