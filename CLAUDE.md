@@ -36,9 +36,11 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
 
 ## Naming
 
-- Catalog `sobeys_<env>` (`dev`/`prod`); schemas `bronze`, `silver`, `gold`.
-- Tables snake_case; layer prefixes `brz_`, `slv_`, `gld_`.
-- One dataset per file; filename == dataset name.
+- Catalog `sobeys_<env>` (`dev`/`prod`).
+- One pipeline **schema per domain** (this demo uses `retail`); layers are conveyed by
+  table prefixes `brz_` / `slv_` / `gld_`. Keeping all three layers in one domain schema
+  keeps catalog + schema fully parameterizable via DAB variables (no hardcoded 3-part names).
+- Tables snake_case; one dataset per file; filename == dataset name.
 
 ## Data quality (Expectations)
 
