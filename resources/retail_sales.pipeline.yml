@@ -1,0 +1,16 @@
+# Retail-sales medallion pipeline (Bronze -> Silver -> Gold), modern Spark Declarative
+# Pipelines. Serverless; catalog/schema/source_path are parameterized via DAB variables
+# so nothing about the environment is hardcoded. The `source_path` configuration value
+# is read by src/bronze/brz_pos_transaction.sql as ${source_path}.
+resources:
+  pipelines:
+    retail_sales_pipeline:
+      name: retail_sales_pipeline
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      libraries:
+        - glob:
+            include: ../src/**
+      configuration:
+        source_path: ${var.source_path}

@@ -1,0 +1,12 @@
+CREATE OR REFRESH STREAMING TABLE brz_{{dataset}}
+  COMMENT 'Bronze raw ingest of {{source_description}}'
+  CLUSTER BY AUTO
+AS
+SELECT
+  *,
+  current_timestamp()   AS _ingest_ts,
+  _metadata.file_path   AS _source_file
+FROM STREAM read_files(
+  '{{volume_path}}',
+  format => '{{format}}'
+);

@@ -1,0 +1,41 @@
+# DAB root for the Sobeys retail-sales medallion demo.
+# Catalog / schema / source path are variables so the same code deploys to any
+# environment. No workspace host is hardcoded — auth comes from the --profile flag.
+bundle:
+  name: dih_vibe_coding
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog to publish the retail medallion pipeline into.
+    default: sobeys_dev
+  schema:
+    description: Domain schema (one schema per domain; layers via brz_/slv_/gld_ prefixes).
+    default: retail
+  source_path:
+    description: UC Volume path where raw POS JSON lands for Auto Loader ingest.
+    default: /Volumes/sobeys_dev/landing/pos/
+
+targets:
+  # Default target. `mode: development` prefixes resource names per user and runs the
+  # pipeline in development mode (isolated, no schedule). Deploy here from your session.
+  dev:
+    mode: development
+    default: true
+
+  # Production. CI/CD ONLY — never deploy prod from an agent session (see CLAUDE.md).
+  prod:
+    mode: production
+    variables:
+      catalog: sobeys_prod
+      source_path: /Volumes/sobeys_prod/landing/pos/
+    # CI/CD supplies the prod wiring below (kept commented so `bundle validate` stays
+    # clean and no agent can deploy prod). No workspace host is hardcoded — it comes
+    # from the --profile used by the CI/CD runner.
+    # run_as:
+    #   service_principal_name: <prod-service-principal-application-id>
+    # workspace:
+    #   # Deterministic root under the prod service principal so CI/CD deploys one copy.
+    #   root_path: /Workspace/Users/<prod-service-principal>/.bundle/${bundle.name}/${bundle.target}
