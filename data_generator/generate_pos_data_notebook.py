@@ -16,12 +16,14 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "sobeys_dev", "Target catalog")
-dbutils.widgets.text("landing_schema", "landing", "Landing schema")
-dbutils.widgets.text("volume", "pos", "Landing volume")
+dbutils.widgets.text("catalog", "dbw_brlui_stable", "Target catalog")
+dbutils.widgets.text("landing_schema", "retail", "Landing schema")
+dbutils.widgets.text("volume", "landing", "Landing volume")
 dbutils.widgets.text("rows", "50000", "Rows to generate")
 dbutils.widgets.text("files", "4", "Shard files")
 dbutils.widgets.text("seed", "42", "RNG seed")
+
+# COMMAND ----------
 
 catalog = dbutils.widgets.get("catalog")
 landing_schema = dbutils.widgets.get("landing_schema")
@@ -30,7 +32,7 @@ rows = int(dbutils.widgets.get("rows"))
 files = int(dbutils.widgets.get("files"))
 seed = int(dbutils.widgets.get("seed"))
 
-volume_path = f"/Volumes/{catalog}/{landing_schema}/{volume}"
+volume_path = f"/Volumes/{catalog}/{landing_schema}/{volume}/pos"
 print(f"Target Volume: {volume_path}")
 
 # COMMAND ----------
