@@ -4,6 +4,11 @@ These are the always-on standards for any coding agent working in this repo.
 Follow them in every session. This file is the single source of truth for "how we
 build data engineering at Sobeys."
 
+> **Where this lives:** paste this file into **Databricks Genie Code → Settings → Workspace
+> instructions** so every engineer's in-workspace agent inherits these standards org-wide.
+> (It also serves as `CLAUDE.md` if anyone works locally in Claude Code.) The on-demand
+> half — packaged skills — lives in `.assistant/skills/`.
+
 ## Context
 
 We build batch + streaming pipelines on Databricks (Unity Catalog, serverless).
@@ -18,7 +23,7 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
     `CREATE STREAMING LIVE TABLE`, `apply_changes(...)`, `dlt.read`/`dlt.read_stream`,
     `partition_cols` / `PARTITIONED BY` + `ZORDER`, `input_file_name()`.
   - If asked to write banned syntax, refuse and explain the modern equivalent
-    (see `skills/legacy-dlt-migrate/`). The **only** exception is `legacy_example/`,
+    (see `.assistant/skills/legacy-dlt-migrate/`). The **only** exception is `legacy_example/`,
     which intentionally holds "before" code for the migration demo — never modernize it.
 - Default to **SQL** for pipelines; use Python only for UDFs / ML / complex params.
 - Everything lands in **Unity Catalog**. NEVER write to DBFS or `hive_metastore`.
@@ -54,18 +59,22 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
 - **Liquid Clustering only** (`CLUSTER BY` / `cluster_by=`). Prefer `CLUSTER BY AUTO`.
   NEVER partition + ZORDER.
 
-## DAB / deployment
+## Pipelines / deployment
 
-- Ship everything as a DAB: `databricks.yml` at repo root, `resources/*.pipeline.yml`,
-  code in `src/`.
-- Targets: `dev` (default, `mode: development`, per-user isolated schema) and
-  `prod` (`mode: production`, service principal, CI/CD only).
-- Parameterize catalog / schema / warehouse with **variables** — no hardcoded envs.
-- Always `databricks bundle validate --strict` before deploy.
+- **Dev iteration is in-workspace:** author and run the pipeline in the **Lakeflow Pipelines
+  Editor** over `src/**`. Ask Genie Code to run it and read the pipeline events; iterate until
+  it completes green in dev.
+- **Prod ships as a DAB via CI/CD:** the repo carries `databricks.yml` + `resources/*.pipeline.yml`
+  (code in `src/`) as the **prod promotion artifact only**. Targets: `dev` (`mode: development`,
+  per-user isolated schema) and `prod` (`mode: production`, service principal, CI/CD only).
+- Parameterize catalog / schema / source path with **variables** (DAB) or **pipeline settings**
+  (Lakeflow editor) — no hardcoded envs.
+- Verify before promoting: the pipeline runs **green in dev** (in-workspace) first.
 
 ## SAFETY (ask first / never do)
 
-- Use `--profile sobeys-dev` for all CLI calls. NEVER the `DEFAULT` profile.
+- Genie Code runs governed by **your Unity Catalog permissions** — work only in the dev catalog
+  (`sobeys_dev`). No CLI profile to manage.
 - NEVER deploy to **prod** from an agent session — dev only. Prod is CI/CD + human PR approval.
 - NEVER run a **full refresh** without explicit human approval (data-loss risk).
 - Secrets via Databricks secret scopes; never inline credentials.
@@ -77,4 +86,4 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
 - [ ] Right layer + dataset type (streaming source → Streaming Table; aggregate → Materialized View)
 - [ ] Expectations on Silver
 - [ ] UC naming convention, no DBFS
-- [ ] `databricks bundle validate --strict` passes
+- [ ] Pipeline runs **green in dev** (in-workspace, Lakeflow Pipelines Editor)

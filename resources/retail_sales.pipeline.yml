@@ -2,6 +2,10 @@
 # Pipelines. Serverless; catalog/schema/source_path are parameterized via DAB variables
 # so nothing about the environment is hardcoded. The `source_path` configuration value
 # is read by src/bronze/brz_pos_transaction.sql as ${source_path}.
+#
+# For dev, the same src/** and this same config are used by the Lakeflow Pipelines Editor
+# (set catalog/schema/source_path in the pipeline's settings). This file is how the pipeline
+# is promoted to prod via CI/CD.
 resources:
   pipelines:
     retail_sales_pipeline:

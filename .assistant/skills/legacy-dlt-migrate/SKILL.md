@@ -21,8 +21,10 @@ Declarative Pipelines API mandated by `CLAUDE.md`.
    legacy syntax — replace it.
 3. Preserve behavior: SCD type, sequencing columns, expectations, and clustering keys
    must be semantically equivalent after migration.
-4. Re-check against `CLAUDE.md`: correct medallion layer, dataset type, naming.
-5. Validate: `databricks bundle validate --strict --profile sobeys-dev`.
+4. Re-check against the workspace standards (Settings → Workspace instructions): correct
+   medallion layer, dataset type, naming.
+5. Verify in-workspace: run the pipeline in the Lakeflow Pipelines Editor (or ask Genie Code
+   to run it) and confirm it completes green — governed by your Unity Catalog permissions.
 
 ## Quick mapping (full table in `references/dlt-migration-map.md`)
 

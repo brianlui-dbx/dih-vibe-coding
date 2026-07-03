@@ -1,6 +1,9 @@
 # DAB root for the Sobeys retail-sales medallion demo.
-# Catalog / schema / source path are variables so the same code deploys to any
-# environment. No workspace host is hardcoded — auth comes from the --profile flag.
+#
+# Dev/demo iteration happens IN-WORKSPACE in the Lakeflow Pipelines Editor over src/**
+# (see README). This bundle is the PROD CI/CD promotion artifact: catalog / schema / source
+# path are variables so the same code ships to any environment, and prod is deployed only by
+# CI/CD + human PR approval — never from an agent session.
 bundle:
   name: dih_vibe_coding
 

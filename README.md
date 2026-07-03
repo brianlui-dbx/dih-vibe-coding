@@ -1,35 +1,42 @@
-# Sobeys Data Engineering — Coding-Agent Demo (`dih-vibe-coding`)
+# Sobeys Data Engineering — Genie Code Demo (`dih-vibe-coding`)
 
-A hands-on demo repo showing how to make coding agents (Claude Code + the
-Databricks Assistant) produce **Sobeys-standard** data-engineering code — modern
-Spark Declarative Pipelines (SDP), a medallion architecture, and a Databricks
-Asset Bundle (DAB) — by teaching the agent your standards with **instructions**
-(`CLAUDE.md`) and **skills** (`skills/`).
+A hands-on demo showing how to make **Databricks Genie Code** — the workspace-native AI
+coding agent — produce **Sobeys-standard** data-engineering code: modern Spark Declarative
+Pipelines (SDP), a medallion architecture, and a Databricks Asset Bundle (DAB) for prod. It
+all runs **inside the Databricks workspace** — no laptop, no local CLI — by teaching the
+agent your standards with **Workspace instructions** and **skills** (`.assistant/skills/`).
+
+> Everything here runs in-workspace with Genie Code. (The same standards double as a
+> `CLAUDE.md` for anyone doing local IDE/repo work in Claude Code, but that's not the demo.)
 
 ## The story this repo tells
 
-1. **Naked agent** — ask for a pipeline with no context → generic, maybe-legacy code.
-2. **+ Instructions** (`CLAUDE.md`) — same prompt → Sobeys-standard code; the agent
-   even refuses banned legacy-DLT syntax.
-3. **+ Skills** (`skills/`) — `/sdp-bronze-ingest` scaffolds a compliant table in
-   seconds; `/legacy-dlt-migrate` upgrades old DLT. Repeatable, shareable.
-4. **Agent runs the loop** — it writes the DAB, `bundle validate`s, deploys to
-   **dev**, reads pipeline events, and fixes its own bugs.
-5. **Team scale** — instructions + skills live in Git; every engineer inherits them.
+1. **Naked agent** — ask Genie Code for a pipeline with no standards loaded → generic,
+   maybe-legacy code.
+2. **+ Workspace instructions** (`CLAUDE.md` pasted into Settings) — same prompt →
+   Sobeys-standard code; the agent even **refuses** banned legacy-DLT syntax.
+3. **+ Skills** (`.assistant/skills/`) — `@sdp-bronze-ingest` scaffolds a compliant table in
+   seconds; `@legacy-dlt-migrate` upgrades old DLT. Repeatable, shareable.
+4. **Agent runs the loop** — Genie Code writes the SDP SQL in the **Lakeflow Pipelines
+   Editor**, runs the pipeline, reads the events, and fixes its own bug — governed by your
+   Unity Catalog permissions.
+5. **Team scale** — Workspace instructions (org-wide) + skills in Git; every engineer's
+   in-workspace agent inherits them.
 
 ## What's in here
 
 | Path | What it is |
 |------|-----------|
-| `CLAUDE.md` | The always-on Sobeys DE standards the agent follows every session. |
-| `skills/sdp-bronze-ingest/` | Skill: scaffold a standards-compliant Bronze ingestion table. |
-| `skills/legacy-dlt-migrate/` | Skill: convert legacy DLT to modern SDP. |
-| `src/{bronze,silver,gold}/` | The medallion pipeline (SDP SQL). |
-| `resources/*.pipeline.yml` | DAB pipeline resource definition. |
-| `databricks.yml` | DAB root: variables + `dev`/`prod` targets. |
-| `data_generator/` | Synthetic grocery POS + loyalty data generator. |
+| `CLAUDE.md` | The always-on Sobeys DE standards — paste into **Genie Code → Settings → Workspace instructions**. |
+| `.assistant/skills/sdp-bronze-ingest/` | Skill: scaffold a standards-compliant Bronze ingestion table. |
+| `.assistant/skills/legacy-dlt-migrate/` | Skill: convert legacy DLT to modern SDP. |
+| `.assistant/skills/README.md` | How Genie Code discovers + invokes these skills. |
+| `src/{bronze,silver,gold}/` | The medallion pipeline (SDP SQL) — the Lakeflow editor's source. |
+| `resources/*.pipeline.yml` | DAB pipeline resource definition (prod promotion). |
+| `databricks.yml` | DAB root: variables + `dev`/`prod` targets (prod CI/CD). |
+| `data_generator/` | POS data generator — an in-workspace **notebook** + a local CLI script. |
 | `legacy_example/` | An intentionally-legacy DLT file — the "before" for the migrate demo. |
-| `docs/` | Talk track + facilitator guide. |
+| `docs/` | Talk track + facilitator guide (**local-only — not pushed to the remote**). |
 
 ## The running example
 
@@ -40,72 +47,68 @@ A retail sales medallion pipeline (grocery-relevant for Sobeys):
 - **Gold** `gld_daily_sales_by_store_category` — daily sales aggregated by store & product
   category (Materialized View, preserves slice dimensions).
 
-## Deploy in your own environment
+## Run it in your workspace
 
-Everything is parameterized — **nothing about the workspace is hardcoded** (auth comes from
-`--profile`). To run this in *your* environment, change **three DAB variables**, defined in
-`databricks.yml`:
+Everything runs in the Databricks workspace and is fully parameterized — nothing about the
+environment is hardcoded, and Genie Code is governed by your own Unity Catalog permissions.
 
-| Variable | Default | What it is |
-|----------|---------|-----------|
-| `catalog` | `sobeys_dev` | Unity Catalog the medallion pipeline publishes into. |
-| `schema` | `retail` | Domain schema for the tables (layers via `brz_/slv_/gld_` prefixes). |
-| `source_path` | `/Volumes/sobeys_dev/landing/pos/` | UC Volume where raw POS JSON lands for Auto Loader. |
+1. **Clone as a Git folder.** In your workspace: **Workspace → Repos/Git folders → Add** this
+   repo. That brings `CLAUDE.md`, `.assistant/skills/`, `src/**`, the data generator, and the
+   DAB into the workspace.
 
-> The **landing Volume** (`source_path`) lives in its own `landing` schema — separate from the
-> `retail` output schema. Create it once:
-> `databricks schemas create landing <catalog> --profile <your-profile>` then
-> `databricks volumes create <catalog> landing pos MANAGED --profile <your-profile>`.
+2. **Load the standards (once).** Copy `CLAUDE.md` into **Genie Code → Settings → Workspace
+   instructions** (org-wide) — now every session codes to the Sobeys standards.
 
-Set the variables **either** per-command with `--var` (below) **or** by editing the `default:`
-values in `databricks.yml`.
+3. **Install the skills (once).** Copy the skill folders into a discovery path so Genie Code
+   finds them — `/Workspace/.assistant/skills/` (org-wide) or
+   `/Workspace/Users/<you>/.assistant/skills/` (just you). You can ask Genie Code to do the
+   copy. See `.assistant/skills/README.md`. Invoke via `@sdp-bronze-ingest` /
+   `@legacy-dlt-migrate`, or let Genie Code pick them automatically.
 
-> **Profiles:** this repo uses the placeholder profile **`sobeys-dev`**. Substitute your own
-> (e.g. `dbw-brlui-sandbox`) via `--profile`. Never use the `DEFAULT` profile (see `CLAUDE.md`).
+4. **Seed the landing Volume.** Open `data_generator/generate_pos_data_notebook.py`, set the
+   widgets (`catalog`, `landing_schema`, `volume`, `rows`), and **Run All** — or ask Genie
+   Code to run it. It creates the schema + volume and writes POS JSON into
+   `/Volumes/<catalog>/<landing_schema>/<volume>/`.
 
-```bash
-CATALOG=<your_catalog>; SCHEMA=retail; PROFILE=<your-profile>
-VOL=/Volumes/$CATALOG/landing/pos/
+5. **Build + run the pipeline (dev, in-workspace).** In the **Lakeflow Pipelines Editor**,
+   create a pipeline over this repo's `src/**`, set its **catalog**, **schema** (`retail`),
+   and **`source_path`** configuration to your landing Volume, then **Run**. Ask Genie Code to
+   run it and read the events; iterate until it completes green. These three settings are the
+   only per-environment values:
 
-# 1. Generate sample data (newline-delimited JSON into ./sample_data/)
-python data_generator/generate_pos_data.py --rows 50000 --out ./sample_data
+   | Setting | Default | What it is |
+   |---------|---------|-----------|
+   | `catalog` | `sobeys_dev` | Unity Catalog the medallion pipeline publishes into. |
+   | `schema` | `retail` | Domain schema for the tables (layers via `brz_/slv_/gld_` prefixes). |
+   | `source_path` | `/Volumes/sobeys_dev/landing/pos/` | UC Volume where raw POS JSON lands for Auto Loader. |
 
-# 2. Upload it to your landing Volume
-databricks fs cp -r ./sample_data "dbfs:$VOL" --profile $PROFILE
+   > The **landing Volume** (`source_path`) lives in its own `landing` schema — separate from
+   > the `retail` output schema. The data-gen notebook creates it for you.
 
-# 3. Validate + deploy to dev, then run the pipeline (override all three vars)
-databricks bundle validate --strict -t dev --profile $PROFILE \
-  --var catalog=$CATALOG --var schema=$SCHEMA --var source_path=$VOL
-databricks bundle deploy   -t dev --profile $PROFILE \
-  --var catalog=$CATALOG --var schema=$SCHEMA --var source_path=$VOL
-databricks bundle run retail_sales_pipeline -t dev --profile $PROFILE
-```
+6. **Promote to prod via CI/CD (not from the agent).** The repo ships `databricks.yml` +
+   `resources/*.pipeline.yml` as the prod promotion artifact. The same three values are DAB
+   variables (defaults in `databricks.yml`); prod is deployed by CI/CD + human PR approval
+   only — never from an agent session.
 
 ## Reset to a clean slate (rerun the demo)
 
-SDP streaming tables keep **Auto Loader checkpoint state** — stale checkpoints are the #1 cause
-of a "dirty" rerun (new sample data silently not re-ingested). Pick one path:
+SDP streaming tables keep **Auto Loader checkpoint state** — stale checkpoints are the #1
+cause of a "dirty" rerun (new sample data silently not re-ingested). All in-workspace:
 
-**Quick rerun (keep the pipeline)** — a full refresh resets + recomputes every table from scratch:
-```bash
-# Optional: replace the landing data first
-databricks fs rm -r "dbfs:$VOL" --profile $PROFILE
-python data_generator/generate_pos_data.py --rows 50000 --out ./sample_data
-databricks fs cp -r ./sample_data "dbfs:$VOL" --profile $PROFILE
-# Reset + recompute all tables (clears streaming / Auto Loader state)
-databricks bundle run retail_sales_pipeline -t dev --profile $PROFILE --full-refresh-all
-```
+**Quick rerun (keep the pipeline)** — a full refresh resets + recomputes every table from
+scratch (needs human approval; data-loss risk):
+1. Optionally re-run the data-gen notebook to refresh the landing Volume (same widgets).
+2. In the Lakeflow Pipelines Editor, choose **Full refresh** (all tables), then **Run**. This
+   clears streaming / Auto Loader state and recomputes from the current landing data.
 
-**Full teardown (cleanest — nothing left behind)**:
-```bash
-databricks bundle destroy -t dev --profile $PROFILE      # remove the pipeline + deployment
-databricks fs rm -r "dbfs:$VOL" --profile $PROFILE        # empty the landing Volume
-# Drop the medallion tables so no stale data remains (run in a SQL editor / warehouse):
-#   DROP SCHEMA IF EXISTS <catalog>.retail CASCADE;
-# Then re-run the Deploy steps above for a pristine environment.
-```
+**Full teardown (cleanest — nothing left behind):**
+1. Delete the pipeline in the Lakeflow Pipelines Editor.
+2. Drop the medallion tables in the SQL editor: `DROP SCHEMA IF EXISTS <catalog>.retail CASCADE;`
+3. Empty the landing Volume (delete files under `/Volumes/<catalog>/landing/pos/`), then
+   re-run steps 4–5 above for a pristine environment.
 
 ## Demo assets
 
 - **Talk track & facilitator guide:** `docs/facilitator-guide.md` (also delivered as a PDF).
+  `docs/` is **local-only** — internal enablement material, kept out of the public repo.
 - **Slides:** Databricks-branded Google Slides deck (link shared separately).

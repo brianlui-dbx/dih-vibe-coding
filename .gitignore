@@ -14,6 +14,9 @@ venv/
 # Generated demo data
 sample_data/
 
+# Internal enablement docs — local-only, not pushed to the remote
+docs/
+
 # OS / editor
 .DS_Store
 .idea/

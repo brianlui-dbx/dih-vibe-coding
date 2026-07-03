@@ -7,7 +7,7 @@
 # convert into the modern SDP medallion pipeline under src/.
 #
 # It lives OUTSIDE src/ on purpose, so the Spark Declarative Pipeline never loads it.
-# Do NOT deploy or run this file. See skills/legacy-dlt-migrate/ for the mapping to
+# Do NOT deploy or run this file. See .assistant/skills/legacy-dlt-migrate/ for the mapping to
 # the modern equivalents (brz_/slv_/gld_ tables in src/).
 
 import dlt

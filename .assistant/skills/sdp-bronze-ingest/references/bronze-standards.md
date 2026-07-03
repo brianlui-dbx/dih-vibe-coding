@@ -45,8 +45,9 @@ FROM STREAM read_files(
 - Hardcoding a catalog in the dataset name → let the pipeline's default catalog/schema
   (set via DAB variables) place the table.
 
-## Validate
+## Verify
 
-```bash
-databricks bundle validate --strict --profile sobeys-dev
-```
+Run the pipeline in the **Lakeflow Pipelines Editor** (or ask Genie Code to run it) and
+confirm the new Bronze table completes green. Genie Code is governed by your Unity Catalog
+permissions — no CLI or profile needed. (For the prod DAB, CI/CD runs
+`databricks bundle validate --strict` on promotion.)

@@ -18,9 +18,11 @@ layer of the medallion architecture.
 1. Ask for: source path (Volume / cloud), file format, target catalog/schema, dataset name.
 2. Copy `templates/bronze_table.sql.tmpl` → `src/bronze/brz_<dataset>.sql`, fill placeholders.
 3. Ingest with `STREAM read_files(...)`; keep `_rescued_data`; add `_ingest_ts` and `_source_file`.
-4. Ensure the dataset is picked up by a `resources/*.pipeline.yml` glob (add the source path
-   to the pipeline's libraries if needed).
-5. Validate: `databricks bundle validate --strict --profile sobeys-dev`.
+4. Ensure the file lives under the pipeline's source folder (`src/bronze/`) so the Lakeflow
+   Pipelines Editor picks it up via its `src/**` glob.
+5. Verify in-workspace: run the pipeline in the Lakeflow Pipelines Editor (or ask Genie Code
+   to run it) and confirm it completes green. Genie Code is governed by your Unity Catalog
+   permissions — no CLI or profile needed.
 
 ## Rules (must follow — see `references/bronze-standards.md`)
 

@@ -4,7 +4,32 @@ Generates synthetic grocery **point-of-sale** transactions as newline-delimited 
 (one JSON object per line), sharded across files, for the retail-sales medallion demo.
 Standard library only — no installs needed.
 
-## Usage
+## In-workspace (primary) — `generate_pos_data_notebook.py`
+
+For the all-in-workspace demo, run the **notebook** — it seeds the landing UC Volume
+directly, no local CLI. Clone this repo as a Git folder, open
+`data_generator/generate_pos_data_notebook.py`, set the widgets, and **Run All** — or just
+ask **Genie Code** to run it. It:
+
+- creates the landing schema + volume if missing (`CREATE SCHEMA/VOLUME IF NOT EXISTS`),
+- reuses the exact logic in `generate_pos_data.py` (imports its functions — no duplication),
+- writes the shards straight into `/Volumes/<catalog>/<landing_schema>/<volume>/`.
+
+| Widget | Default | Meaning |
+|--------|---------|---------|
+| `catalog` | `sobeys_dev` | Target catalog |
+| `landing_schema` | `landing` | Schema that holds the landing volume |
+| `volume` | `pos` | Landing volume name |
+| `rows` | `50000` | Total records to generate |
+| `files` | `4` | Number of shard files |
+| `seed` | `42` | RNG seed — same seed produces identical output |
+
+Then point the pipeline's `source_path` (Lakeflow pipeline settings, or the DAB
+`source_path` variable) at the same `/Volumes/<catalog>/<landing_schema>/<volume>/` path.
+
+## Local CLI (optional) — `generate_pos_data.py`
+
+The same generator also runs as a standalone script (e.g. for local testing):
 
 ```bash
 # Defaults: 10,000 rows, 4 shard files, seed 42, into ./sample_data
@@ -41,16 +66,18 @@ catch. The failure modes map directly to the Silver Expectations and Auto Loader
 | `product_category` = null | `known_category` — warn |
 | string in a numeric field (`quantity`/`unit_price`/`store_id`) | Auto Loader `_rescued_data` |
 
-## Upload to a Unity Catalog Volume
+## Getting data into the landing Volume
 
 The Bronze table ingests from the UC Volume named by the pipeline's `source_path`
-variable (default `/Volumes/sobeys_dev/landing/pos/`). Copy the generated data there:
+(default `/Volumes/sobeys_dev/landing/pos/`).
 
-```bash
-# Substitute your own catalog and CLI profile.
-databricks fs cp -r ./sample_data dbfs:/Volumes/<catalog>/landing/pos/ --profile <profile>
-```
+- **In-workspace (recommended):** the **notebook above** writes straight into the Volume and
+  creates it if needed — nothing else to do.
+- **From local CLI output:** if you generated files locally with `generate_pos_data.py`, copy
+  them up (the `dbfs:` prefix is required even for UC Volume paths; create the Volume first):
+  ```bash
+  databricks fs cp -r ./sample_data dbfs:/Volumes/<catalog>/landing/pos/
+  ```
 
-> The `dbfs:` prefix is required even for UC Volume paths. Create the Volume first if
-> it doesn't exist (`landing` schema, `pos` volume under your catalog), and point the
-> DAB `source_path` variable at the same location.
+Point the pipeline's `source_path` (Lakeflow pipeline settings, or the DAB `source_path`
+variable) at the same location.
