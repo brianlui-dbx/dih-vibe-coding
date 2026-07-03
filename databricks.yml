@@ -13,13 +13,13 @@ include:
 variables:
   catalog:
     description: Unity Catalog to publish the retail medallion pipeline into.
-    default: sobeys_dev
+    default: dbw_brlui_stable
   schema:
     description: Domain schema (one schema per domain; layers via brz_/slv_/gld_ prefixes).
     default: retail
   source_path:
     description: UC Volume path where raw POS JSON lands for Auto Loader ingest.
-    default: /Volumes/sobeys_dev/landing/pos/
+    default: /Volumes/dbw_brlui_stable/retail/landing/
 
 targets:
   # Default target. `mode: development` prefixes resource names per user and runs the

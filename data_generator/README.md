@@ -17,9 +17,9 @@ ask **Genie Code** to run it. It:
 
 | Widget | Default | Meaning |
 |--------|---------|---------|
-| `catalog` | `sobeys_dev` | Target catalog |
-| `landing_schema` | `landing` | Schema that holds the landing volume |
-| `volume` | `pos` | Landing volume name |
+| `catalog` | `dbw_brlui_stable` | Target catalog |
+| `landing_schema` | `retail` | Schema that holds the landing volume |
+| `volume` | `landing` | Landing volume name |
 | `rows` | `50000` | Total records to generate |
 | `files` | `4` | Number of shard files |
 | `seed` | `42` | RNG seed — same seed produces identical output |

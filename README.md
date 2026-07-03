@@ -78,9 +78,9 @@ environment is hardcoded, and Genie Code is governed by your own Unity Catalog p
 
    | Setting | Default | What it is |
    |---------|---------|-----------|
-   | `catalog` | `sobeys_dev` | Unity Catalog the medallion pipeline publishes into. |
+   | `catalog` | `dbw_brlui_stable` | Unity Catalog the medallion pipeline publishes into. |
    | `schema` | `retail` | Domain schema for the tables (layers via `brz_/slv_/gld_` prefixes). |
-   | `source_path` | `/Volumes/sobeys_dev/landing/pos/` | UC Volume where raw POS JSON lands for Auto Loader. |
+   | `source_path` | `/Volumes/dbw_brlui_stable/landing/` | UC Volume where raw POS JSON lands for Auto Loader. |
 
    > The **landing Volume** (`source_path`) lives in its own `landing` schema — separate from
    > the `retail` output schema. The data-gen notebook creates it for you.
@@ -104,11 +104,5 @@ scratch (needs human approval; data-loss risk):
 **Full teardown (cleanest — nothing left behind):**
 1. Delete the pipeline in the Lakeflow Pipelines Editor.
 2. Drop the medallion tables in the SQL editor: `DROP SCHEMA IF EXISTS <catalog>.retail CASCADE;`
-3. Empty the landing Volume (delete files under `/Volumes/<catalog>/landing/pos/`), then
+3. Empty the landing Volume (delete files under `/Volumes/<catalog>/<schema>/landing/`), then
    re-run steps 4–5 above for a pristine environment.
-
-## Demo assets
-
-- **Talk track & facilitator guide:** `docs/facilitator-guide.md` (also delivered as a PDF).
-  `docs/` is **local-only** — internal enablement material, kept out of the public repo.
-- **Slides:** Databricks-branded Google Slides deck (link shared separately).
