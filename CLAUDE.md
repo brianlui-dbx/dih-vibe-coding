@@ -4,11 +4,6 @@ These are the always-on standards for any coding agent working in this repo.
 Follow them in every session. This file is the single source of truth for "how we
 build data engineering at Sobeys."
 
-> **Where this lives:** paste this file into **Databricks Genie Code → Settings → Workspace
-> instructions** so every engineer's in-workspace agent inherits these standards org-wide.
-> (It also serves as `CLAUDE.md` if anyone works locally in Claude Code.) The on-demand
-> half — packaged skills — lives in `.assistant/skills/`.
-
 ## Context
 
 We build batch + streaming pipelines on Databricks (Unity Catalog, serverless).
@@ -29,10 +24,6 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
 - Everything lands in **Unity Catalog**. NEVER write to DBFS or `hive_metastore`.
 
 ## Medallion layering
-
-- **Bronze**: raw ingest via Auto Loader (`STREAM read_files(...)`), append-only
-  **Streaming Tables**. Minimal transforms. Keep `_rescued_data`. Add `_ingest_ts`
-  (`current_timestamp()`) and `_source_file` (`_metadata.file_path`).
 - **Silver**: cleaned, typed, deduped **Streaming Tables** read from Bronze via
   `STREAM(<bronze_table>)`. Enforce data-quality **Expectations**.
 - **Gold**: business aggregates as **Materialized Views** using a **batch** read of
@@ -41,10 +32,7 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
 
 ## Naming
 
-- Catalog `dbw_brlui_stable`
-- One pipeline **schema per domain** (this demo uses `retail`); layers are conveyed by
-  table prefixes `brz_` / `slv_` / `gld_`. Keeping all three layers in one domain schema
-  keeps catalog + schema fully parameterizable via DAB variables (no hardcoded 3-part names).
+- Layers are conveyed by table prefixes `brz_` / `slv_` / `gld_`. Keeping all three layers in one domain schema keeps catalog + schema fully parameterizable via DAB variables (no hardcoded 3-part names).
 - Tables snake_case; one dataset per file; filename == dataset name.
 
 ## Data quality (Expectations)
@@ -73,9 +61,6 @@ Domain: grocery retail — POS, inventory, loyalty, supply chain.
 
 ## SAFETY (ask first / never do)
 
-- Genie Code runs governed by **your Unity Catalog permissions** — work only in the dev catalog
-  (`sobeys_dev`). No CLI profile to manage.
-- NEVER deploy to **prod** from an agent session — dev only. Prod is CI/CD + human PR approval.
 - NEVER run a **full refresh** without explicit human approval (data-loss risk).
 - Secrets via Databricks secret scopes; never inline credentials.
 - Ask before dropping or overwriting any table.
